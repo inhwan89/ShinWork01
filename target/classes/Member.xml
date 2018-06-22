@@ -3,7 +3,7 @@
 	PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
 	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="member">
-	<!-- aㅇㅇㅇㅇㅇㅇaaaaaa-->
+	<!-- wwww-->
 	<!-- 회원가입 -->
 	<insert id="MemberJoin" parameterType="Member.MemberVo"> 
 		INSERT INTO  Member_individual(serial, mid, pwd, question, answer, irum, post, address1, address2, phone, email, gender, mdate, area, mileage, photo)
