@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace = "accommodation">
+<insert id = "insert" parameterType = "accommodation.AccommodationVo">
+		insert all
+		into accommodation(serial, aname, mdate, worker, freeparking, freemeal, aircondition, pool, nosmoking, restaurant, freewifi, fitness, hit, content, address1, address2, address3, privacy, parkingspace, part)
+		values(seq_accommodation.nextval, #{aname}, sysdate, #{worker}, #{freeparking}, #{freemeal}, #{aircondition}, #{pool}, #{nosmoking}, #{restaurant}, #{freewifi}, #{fitness}, 0, #{content}, #{address1}, #{address2}, #{address3}, #{privacy}, #{parkingspace}, #{part})
+		
+	<foreach collection = "attFile" index = "key" item = "value">
+		into accommodation_att(serial, pserial, attfile, oriattfile)
+		values(getSerialAC, seq_accommodation.currval, #{key}, #{value})
+	</foreach>
+		select * from dual
+</insert>
+
+<insert id = "insertR" parameterType = "accommodation.RoomVo">
+		insert into room(serial, pserial, room, room_num, weekdays, weekends)
+		values(seq_room.nextval, seq_accommodation.currval, #{room}, #{room_num}, #{weekdays}, #{weekends})
+</insert>
+
+<select id = 'select' parameterType="accommodation.AccommodationVo" resultType="accommodation.AccommodationVo"> 
+	select a.serial serial, attfile attfileshow, aname, address1, address2, part from accommodation a join accommodation_att aa on a.serial = aa.pserial where aa.oriattfile = 'attfile0'
+</select>
+
+<select id = 'selectOne' parameterType="accommodation.AccommodationVo" resultType="accommodation.AccommodationVo"> 
+	select aname, mdate, worker, freemeal, parkingspace, freeparking, aircondition, pool, nosmoking, restaurant, freewifi, fitness, address1, address2, address3, privacy, content, a.serial serial, attfile attfileshow from accommodation a join accommodation_att aa on a.serial = aa.pserial where a.serial = #{serial} and aa.oriattfile = 'attfile0'
+</select>
+
+<select id = 'roomList' parameterType="accommodation.RoomVo" resultType="accommodation.RoomVo"> 
+	select * from room where pserial = #{pserial}
+</select>
+
+<select id = 'picList' parameterType="int" resultType="accommodation.RoomAttVo"> 
+	select * from accommodation_att aa join room r on aa.pserial = r.serial where aa.pserial = #{_parameter}
+</select>
+</mapper>

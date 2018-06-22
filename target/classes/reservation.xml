@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="reservation">
+	<select id="selectRoom" parameterType="int" resultType="accommodation.RoomVo">
+		select * from room where pserial = ${_parameter}
+	</select>
+	<select id="checkReservation" parameterType="reservation.ReservationVo" resultType="int">
+		select count(*) from reservation r join reservation_detail d on r.serial = d.pserial where r.acc_se=${serial} and d.room=#{room} and d.rdate = #{rdate}
+	</select>
+	<select id ="selectRoom2" parameterType="int" resultType="accommodation.RoomVo">
+		select * from room where serial=${_parameter}
+	</select>
+	<select id="selectMem" parameterType="String" resultType="Member.MemberVo">
+		select * from member_individual where mid=#{_parameter}
+	</select>
+	<select id="selectMem2" parameterType="int" resultType="Member.MemberVo">
+		select * from member_individual where serial=#{_parameter}
+	</select>
+	<insert id="insertAcc" parameterType="reservation.ReservationVo">
+		insert into reservation(serial,mem_se,acc_se,price)
+		values(seq_reservation.nextval,${mem_se},${serial},${price})
+	</insert>
+	<update id="memMile" parameterType="reservation.ReservationVo">
+		UPDATE Member_individual 
+		SET mileage = mileage-#{price} 
+		WHERE  serial = ${mem_se}
+	</update>
+	<update id="comMile" parameterType="reservation.ReservationVo">
+		UPDATE Member_company 
+		SET mileage = mileage+#{price}
+		WHERE  mid = #{worker}
+	</update>
+	<insert id="insert_detail_weekend" parameterType="reservation.ReservationVo">
+		insert into reservation_detail(serial,pserial,price,rdate,room)
+		values(seq_reservation_detail.nextval,seq_reservation.currval,${weekends},#{rdate},#{room})
+	</insert>
+	<insert id="insert_detail_weekday" parameterType="reservation.ReservationVo">
+		insert into reservation_detail(serial,pserial,price,rdate,room)
+		values(seq_reservation_detail.nextval,seq_reservation.currval,${weekdays},#{rdate},#{room})
+	</insert>
+	<select id="selectRes" parameterType="int" resultType="restaurant.RestaurantVo">
+		select * from restaurant where serial =${_parameter}
+	</select>
+	<select id="checkrtime" parameterType="reservation.ReservationVo" resultType="int">
+		select count(*) from reservation r join reservation_detail d on r.serial = d.pserial where r.res_se=${serial} and d.rtime=#{rtime} and d.rdate = #{rdate}
+	</select>
+	<insert id="insertRes" parameterType="reservation.ReservationVo">
+		insert into reservation(serial,mem_se,res_se,price)
+		values(seq_reservation.nextval,${mem_se},${serial},${price})
+	</insert>
+	<insert id="insert_detail_res" parameterType="reservation.ReservationVo">
+		insert into reservation_detail(serial,pserial,price,rdate,menu,rtime)
+		values(seq_reservation_detail.nextval,seq_reservation.currval,${price},#{rdate},#{menu},${rtime})
+	</insert>
+	<select id="selectAll" parameterType="reservation.ReservationVo" resultType="reservation.ReservationVo">
+		select b.* from (select rownum tcnt, a.* from (
+		select * from reservation where mem_se=${mem_se} 
+		<if test='select !=null and select=="res" '>
+			and res_se is not null	
+		</if>
+		<if test='select !=null and select=="acc" '>
+			and acc_se is not null	
+		</if>
+		order by serial desc) a  )b 
+		where b.tcnt between ${startNo} and ${endNo} 
+	</select>
+	<select id="selectOne" parameterType="int" resultType="reservation.ReservationVo">
+		select to_char(rdate,'yyyy-MM-dd') rdate, rtime,menu,room,serial from reservation_detail where pserial=${_parameter} order by serial
+	</select>
+	<select id="selectStore" parameterType="int" resultType="String">
+		select aname from accommodation where serial=${_parameter}
+	</select>
+	<select id="page" parameterType="reservation.ReservationVo" resultType="int">
+		select count(*) from reservation where mem_se=${mem_se} 
+		<if test='select !=null and select=="res" '>
+			and res_se is not null	
+		</if>
+		<if test='select !=null and select=="acc" '>
+			and acc_se is not null	
+		</if>
+	</select>
+	<select id="selectReservation" parameterType="int" resultType="reservation.ReservationVo">
+		select * from reservation where serial =${_parameter}
+	</select>
+	<select id="selectAcc" parameterType="int" resultType="accommodation.AccommodationVo">
+		select * from accommodation where serial =${_parameter}
+	</select>
+	<select id="listAcc" parameterType="String" resultType="accommodation.AccommodationVo">
+		select * from accommodation where worker =#{_parameter}
+	</select>
+	<select id="listRes" parameterType="String" resultType="restaurant.RestaurantVo">
+		select * from restaurant where mid =#{_parameter}
+	</select>
+	<select id="page2" parameterType="reservation.ReservationVo" resultType="int">
+		select count(*) from reservation
+		<where>
+			<if test='select !=null and select=="res" '>
+				res_se=${serial2}
+			</if>
+				<if test='select !=null and select=="acc" '>
+				acc_se=${serial2}
+			</if>
+		</where>
+	</select>
+	<select id="selectAll2" parameterType="reservation.ReservationVo" resultType="reservation.ReservationVo">
+		select b.* from (select rownum tcnt, a.* from (
+		select * from reservation
+		<where>
+			<if test='select !=null and select=="res" '>
+				res_se=${serial2}
+			</if>
+				<if test='select !=null and select=="acc" '>
+				acc_se=${serial2}
+			</if>
+		</where>
+		order by serial desc) a  )b 
+		where b.tcnt between ${startNo} and ${endNo} 
+	</select>
+	<insert id="insertCancle" parameterType="reservation.ReservationVo" >
+		insert into cancel(serial,mem_se,acc_se,res_se,price,reason,rdate,cdate,menu)
+		values(seq_cancel.nextval,${mem_se},${acc_se},${res_se},${price},#{reason},#{rdate},sysdate,#{menu})
+	</insert>
+	<select id="checkC" parameterType="int" resultType="String">
+		select mid from restaurant where serial=${_parameter}
+	</select>
+	<select id="checkC2" parameterType="int" resultType="String">
+		select worker from accommodation where serial=${_parameter}
+	</select>
+	<delete id="deleteR" parameterType="int">
+		delete reservation where serial=${_parameter}
+	</delete>
+	<delete id="deleteRD" parameterType="int">
+		delete reservation_detail where pserial=${_parameter}
+	</delete>
+	<select id="cpage" parameterType="reservation.ReservationVo" resultType="int">
+		select count(*) from cancel where mem_se=${mem_se} 
+		<if test='select !=null and select=="res" '>
+			and acc_se=0
+		</if>
+		<if test='select !=null and select=="acc" '>
+			and res_se =0
+		</if>
+	</select>
+	<select id="selectCAll" parameterType="reservation.ReservationVo" resultType="reservation.ReservationVo">
+		select b.* from (select rownum tcnt, a.* from (
+		select * from cancel where mem_se=${mem_se} 
+		<if test='select !=null and select=="res" '>
+			and acc_se=0
+		</if>
+		<if test='select !=null and select=="acc" '>
+			and res_se =0
+		</if>
+		order by serial desc) a  )b 
+		where b.tcnt between ${startNo} and ${endNo} 
+	</select>
+	
+	<select id="cpage2" parameterType="reservation.ReservationVo" resultType="int">
+		select count(*) from cancel
+		<where>
+			<if test='select !=null and select=="res" '>
+				res_se=${serial2}
+			</if>
+				<if test='select !=null and select=="acc" '>
+				acc_se=${serial2}
+			</if>
+		</where>
+	</select>
+	<select id="selectCAll2" parameterType="reservation.ReservationVo" resultType="reservation.ReservationVo">
+		select b.* from (select rownum tcnt, a.* from (
+		select * from cancel
+		<where>
+			<if test='select !=null and select=="res" '>
+				res_se=${serial2}
+			</if>
+				<if test='select !=null and select=="acc" '>
+				acc_se=${serial2}
+			</if>
+		</where>
+		order by serial desc) a  )b 
+		where b.tcnt between ${startNo} and ${endNo} 
+	</select>
+</mapper>

@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+	PUBLIC "-//mybatis.org//DTD mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="member">
+	<!-- git  -->
+	<!-- 회원가입 -->
+	<insert id="MemberJoin" parameterType="Member.MemberVo"> 
+		INSERT INTO  Member_individual(serial, mid, pwd, question, answer, irum, post, address1, address2, phone, email, gender, mdate, area, mileage, photo)
+		       VALUES(seq_user.nextval, #{mid}, #{pwd}, #{question}, #{answer}, #{irum}, #{post}, #{address1}, #{address2}, #{phone} || '-' || #{phone2} || '-' || #{phone3}, #{email} || '@' || #{email2}, #{gender}, #{mdate}, #{area}, 0, #{photo} )			 
+	</insert>
+	<insert id="MemberJoin2" parameterType="Member.MemberVo">
+		INSERT INTO  Member_company(serial, mid, pwd, question, answer, delegate, company_number, post, address1, address2, phone, email, business_type, bank, account_number, area, hit, mileage, photo)
+		       VALUES(seq_user.nextval, #{mid}, #{pwd}, #{question}, #{answer}, #{delegate}, #{company_number}, #{post}, #{address1}, #{address2}, #{phone} || '-' || #{phone2} || '-' || #{phone3}, #{email} || '@' || #{email2}, #{business_type}, #{bank}, #{account_number}, #{area}, 0, 0, #{photo})				 	       
+	</insert>
+	<!-- id 중복체크 -->
+	<select id="idCheck" parameterType="String"  resultType="Member.MemberVo">	
+		SELECT mid FROM Member_individual WHERE mid = #{_parameter} 			
+	</select>
+	<select id="idCheck2" parameterType="String"  resultType="Member.MemberVo">
+		SELECT mid FROM Member_company WHERE mid = #{_parameter}   
+	</select>
+	<!-- 로그인 -->
+	<select id="MemberLogin" parameterType="Member.MemberVo" resultType="int">
+		SELECT count(*) FROM Member_individual WHERE mid = #{mid} and pwd = #{pwd}
+	</select>
+	<select id="MemberLogin2" parameterType="Member.MemberVo" resultType="int">
+		SELECT count(*) FROM Member_company WHERE mid = #{mid} and pwd = #{pwd}
+	</select>
+	<!-- 회원수정 불러오기 -->
+	<select id="Modify" parameterType="String" resultType="Member.MemberVo">
+		SELECT serial, mid, pwd, question, answer, irum, post, address1, address2, phone, email, gender, to_char(mdate,'yyyy-MM-dd') mdate, area, mileage, photo 
+		  FROM Member_individual WHERE mid = #{_parameter}
+	</select>
+	<select id="Modify2" parameterType="String" resultType="Member.MemberVo">
+		SELECT serial, mid, pwd, question, answer, delegate, company_number, post, address1, address2, phone, email, business_type, bank, account_number, area, hit, mileage, photo
+		  FROM Member_company WHERE mid = #{_parameter}
+	</select>
+	<!-- 회원수정 -->
+	<update id="MemberUpdate" parameterType="Member.MemberVo">
+		UPDATE Member_individual 
+		SET    pwd = #{newPwd}, irum = #{irum}, post = #{post}, address1 = #{address1}, address2 = #{address2}, 
+		       phone = #{phone} || '-' || #{phone2} || '-' || #{phone3},  email = #{email} || '@' || #{email2},  gender = #{gender},  mdate = #{mdate},  area = #{area}, mileage = #{mileage}, photo = #{photo} 
+		WHERE  mid = #{mid}
+	</update>
+	<update id="MemberUpdate2" parameterType="Member.MemberVo">
+		UPDATE Member_company 
+		SET    delegate = #{delegate}, company_number = #{company_number}, post = #{post}, address1 = #{address1}, address2 = #{address2}, 
+		       phone = #{phone} || '-' || #{phone2} || '-' || #{phone3},  email = #{email} || '@' || #{email2},  business_type = #{business_type}, bank = #{bank}, account_number = #{account_number}, area = #{area}, mileage = #{mileage}, photo = #{photo} 
+		WHERE  mid = #{mid}
+	</update>
+	<!-- 회원삭제 -->
+	<delete id="MemberDelete">
+		DELETE FROM Member_individual WHERE mid = #{mid}	
+	</delete>
+	<delete id="MemberDelete2">
+		DELETE FROM Member_company WHERE mid = #{mid}	
+	</delete>
+	<!-- id/비밀번호 찾기 -->
+	<select id="MemberFind" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT * FROM Member_individual WHERE irum = #{irum} and email = #{email} 
+	</select>
+	<select id="MemberFind2" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT * FROM Member_company WHERE delegate = #{irum} and email = #{email} 
+	</select>
+	<select id="MemberFind3" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT * FROM Member_individual WHERE irum = #{irum} and phone = #{phone} || '-' || #{phone2} || '-' || #{phone3} 
+	</select>
+	<select id="MemberFind4" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT * FROM Member_company WHERE delegate = #{irum} and phone = #{phone} || '-' || #{phone2} || '-' || #{phone3} 
+	</select>
+	<!-- admin 개인회원조회 -->
+	<!-- 초기리스트 -->
+	<select id="MemberIndividualList" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT b.* FROM
+			(SELECT ROWNUM cnt, a. * FROM
+				(SELECT z.* FROM
+					(SELECT serial, mid, pwd, question, answer, irum, post, address1, address2, phone, 
+					        email, gender, to_char(mdate,'yyyy-MM-dd') mdate, area, mileage  
+							FROM Member_individual 
+							WHERE mid != 'admin'				
+					)z where z.mid like '%${findStr}%' or z.irum like '%${findStr}%'
+				)a
+		    )b WHERE b.cnt BETWEEN ${startNo} and ${endNo}
+	</select>
+	<!-- 지역순 -->
+	<select id="MemberI_rgisterOrderList" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT b.* FROM
+			(SELECT ROWNUM cnt, a. * FROM
+				(SELECT z.* FROM
+					(SELECT serial, mid, pwd, question, answer, irum, post, address1, address2, phone, 
+					        email, gender, to_char(mdate,'yyyy-MM-dd') mdate, area, mileage  
+							FROM Member_individual 
+							WHERE mid != 'admin'				
+					)z where z.mid like '%${findStr}%' or z.irum like '%${findStr}%' ORDER BY area
+				)a
+		    )b WHERE b.cnt BETWEEN ${startNo} and ${endNo}
+	</select>
+	<!-- 이름순 -->
+	<select id="MemberI_IrumOrderList" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT b.* FROM
+			(SELECT ROWNUM cnt, a. * FROM
+				(SELECT z.* FROM
+					(SELECT serial, mid, pwd, question, answer, irum, post, address1, address2, phone, 
+					        email, gender, to_char(mdate,'yyyy-MM-dd') mdate, area, mileage  
+							FROM Member_individual 
+							WHERE mid != 'admin'				
+					)z where z.mid like '%${findStr}%' or z.irum like '%${findStr}%' ORDER BY irum
+				)a
+		    )b WHERE b.cnt BETWEEN ${startNo} and ${endNo}
+	</select>
+	<!-- admin 사업자회원조회 -->
+	<!-- 초기리스트 -->
+	<select id="MemberCompanyList" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT b.* FROM
+			(SELECT ROWNUM cnt, a. * FROM
+				(SELECT z.* FROM
+					(SELECT serial, mid, pwd, question, answer, delegate, company_number, 
+						post, address1, address2, phone, email, business_type, bank, account_number, 
+						area, hit, mileage  
+					FROM Member_company 
+					WHERE mid != 'admin'				
+					)z where z.mid like '%${findStr}%' or z.delegate like '%${findStr}%'
+				)a
+		    )b WHERE b.cnt BETWEEN ${startNo} and ${endNo}
+	</select>
+	<!-- 지역순 -->
+	<select id="MemberC_rgisterOrderList" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT b.* FROM
+			(SELECT ROWNUM cnt, a. * FROM
+				(SELECT z.* FROM
+					(SELECT serial, mid, pwd, question, answer, delegate, company_number, 
+						post, address1, address2, phone, email, business_type, bank, account_number, 
+						area, hit, mileage  
+					FROM Member_company 
+					WHERE mid != 'admin'				
+					)z where z.mid like '%${findStr}%' or z.delegate like '%${findStr}%' ORDER BY area
+				)a
+		    )b WHERE b.cnt BETWEEN ${startNo} and ${endNo}
+	</select>
+	<!-- 대표자명순 -->
+	<select id="MemberC_IrumOrderList" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT b.* FROM
+			(SELECT ROWNUM cnt, a. * FROM
+				(SELECT z.* FROM
+					(SELECT serial, mid, pwd, question, answer, delegate, company_number, 
+						post, address1, address2, phone, email, business_type, bank, account_number, 
+						area, hit, mileage  
+					FROM Member_company 
+					WHERE mid != 'admin'				
+					)z where z.mid like '%${findStr}%' or z.delegate like '%${findStr}%' ORDER BY delegate
+				)a
+		    )b WHERE b.cnt BETWEEN ${startNo} and ${endNo}
+	</select>
+	<!-- mileage순 -->
+	<select id="MemberC_HitOrderList" parameterType="Member.MemberVo" resultType="Member.MemberVo">
+		SELECT b.* FROM
+			(SELECT ROWNUM cnt, a. * FROM
+				(SELECT z.* FROM
+					(SELECT serial, mid, pwd, question, answer, delegate, company_number, 
+						post, address1, address2, phone, email, business_type, bank, account_number, 
+						area, hit, mileage  
+					FROM Member_company 
+					WHERE mid != 'admin'				
+					)z where z.mid like '%${findStr}%' or z.delegate like '%${findStr}%' ORDER BY mileage DESC
+				)a
+		    )b WHERE b.cnt BETWEEN ${startNo} and ${endNo}
+	</select>
+	<!-- 페이지 분리 -->
+	<!-- 개인회원 페이지 분리 -->
+	<select id="page" parameterType="String" resultType="int">
+		 select count(*) totSize from Member_individual where mid like '%${_parameter}%' 
+		   												or irum like'%${_parameter}%' 
+	</select>
+	<!-- 사업자회원 페이지 분리 -->
+	<select id="page2" parameterType="String" resultType="int">
+		 select count(*) totSize from Member_company where mid like '%${_parameter}%' 		   												
+														or delegate like '%${_parameter}%'
+	</select>
+</mapper>	

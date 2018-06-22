@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="review">
+	<!-- 자료저장 -->
+	<insert id="insert" parameterType="review.ReviewVo">
+		insert all into review(serial, store, service, quality, cleans, subject, content, seasons, posted_date, worker, hit, avg )
+		values(seq_review.nextval, #{store}, ${service}, ${quality}, ${cleans}, #{subject}, #{content}, #{seasons}, sysdate, #{worker}, 0, round(((${service}+${quality}+${cleans})/3.0),2) )
+		<foreach collection="attFile" index="key" item="value">
+			into review_att(serial,pserial,attfile,oriattfile) values(getSerial2(),seq_review.currval,#{key},#{value})
+		</foreach>
+		select * from dual
+	</insert>
+	<!-- 페이지  -->
+	<select id="page" parameterType="String" resultType="int">
+		select count(*) totSize from review where subject like '%${_parameter}%' or content like '%${_parameter}%'
+	</select>
+	<!-- 리스트 전체 -->
+	<select id="select" parameterType="review.ReviewVo" resultType="review.ReviewVo">
+	select c.* from (select rownum tcnt, b.* from (
+		select a.* , (select count(*) from review_att where a.serial=pserial) cnt 
+					 from review a where subject like '%${findStr}%' or content like '%${findStr}%' order by serial) b  )c 
+					 where c.tcnt between ${startNo} and ${endNo} 
+	</select>
+	<!-- 리스트의 att파일 읽어오기 -->
+	<select id="selectatt" parameterType="int" resultType="String">
+		select attfile from review_att where pserial=${_parameter}
+	</select>
+	<!-- 자세히보기 진입시 hit증가 -->
+	<update id="updateHit" parameterType="int">
+		update review set hit = nvl(hit,0)+1 where serial =${_parameter}
+	</update>
+	<!-- 자세히보기 -->
+	<select id="view" parameterType="int" resultType="review.ReviewVo">
+		select * from review where serial = ${_parameter}
+	</select>
+	<!-- 자세히보기 첨부파일 -->
+	<select id="attView" parameterType="int" resultType="review.ReviewAttVo">
+		select * from review_att where pserial=${_parameter}
+	</select>
+	<!-- 삭제 -->
+	<delete id="delete" parameterType="int" statementType="CALLABLE">
+		{call
+			declare
+			begin
+				delete from review where serial = ${_parameter};
+				delete from review_att where pserial =${_parameter};
+			end
+		}
+	</delete>
+	<!-- 수정 -->
+	<update id="modify" parameterType="review.ReviewVo">
+		update review set subject=#{subject}, content=#{content},service=${service},quality=${quality},cleans=${cleans},seasons=#{seasons},avg=round(((${service}+${quality}+${cleans})/3.0),2)
+		where serial=${serial}
+	</update>
+	<delete id="attDelete" parameterType="String">
+		delete review_att where attfile=#{parameter}
+	</delete>
+	<insert id="attInsert" parameterType="review.ReviewAttVo">
+		insert into review_att(serial,pserial,attfile,oriattfile) values(getSerial2(),${pserial},#{attFile},#{oriAttFile})
+	</insert>
+	<!-- 리플입력 -->
+	<insert id="replI" parameterType="review.ReviewVo">
+		insert into repl(serial,pserial,mdate,worker,content)
+		values(seq_repl.nextval,${serial},sysdate,#{worker},#{content})
+	</insert>
+	<!-- 리플삭제 -->
+	<delete id="replD" parameterType="int">
+		delete from repl where serial = ${_parameter}
+	</delete>
+	<!-- 리플보기 -->
+	<select id="replV" parameterType="int" resultType="review.ReviewVo">
+		select * from repl where pserial=${_parameter} order by mdate desc
+	</select>
+</mapper>

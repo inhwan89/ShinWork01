@@ -1,0 +1,111 @@
+@charset "UTF-8";
+.sidenav {
+    height: 100%;
+    width: 0;
+    position: fixed;
+    z-index: 20;
+    top: 0;
+    right: 0;
+    background-color: white;
+    overflow-x: hidden;
+    transition: 0.5s;
+    padding-top: 60px;
+}
+
+.sidenav a {
+    padding: 10px 0px 10px 0px;
+    text-decoration: none;
+    color: #818181;
+    display: block;
+    transition: 0.3s;
+}
+
+
+#overlay {
+    position: fixed;
+    display: none;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0,0,0,0.5);
+    z-index: 11;
+    transition: .5s ease;
+    cursor: pointer;
+}
+
+
+.sidenav li {
+    position: relative; 
+    line-height: 20px;
+    display: inline-block;
+    width: 100%;
+}
+
+.sidenav li:before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    height: 100%;
+    width: 3px;
+    background-color: #314190;
+    -webkit-transition: width .2s ease-in;
+      -moz-transition:  width .2s ease-in;
+       -ms-transition:  width .2s ease-in;
+            transition: width .2s ease-in;
+
+}
+
+.sidenav li:nth-child(2):before {
+    background-color: #ec1b5a;   
+}
+.sidenav li:nth-child(3):before {
+    background-color: #79aefe;   
+}
+.sidenav li:nth-child(4):before {
+    background-color: #35acdf;   
+}
+.sidenav li:nth-child(5):before {
+    background-color: #279636;   
+}
+.sidenav li:nth-child(6):before {
+    background-color: #7d5d81;   
+}
+.sidenav li:nth-child(7):before {
+    background-color: #ead24c;   
+}
+.sidenav li:nth-child(8):before {
+    background-color: #2d2366;   
+}
+
+.sidenav li:hover:before,
+.sidenav li.open:hover:before {
+    width: 100%;
+    -webkit-transition: width .2s ease-in;
+      -moz-transition:  width .2s ease-in;
+       -ms-transition:  width .2s ease-in;
+            transition: width .2s ease-in;
+
+}
+
+.sidenav li a {
+	left:0px;
+    display: block;
+    color: #73757a;
+    text-decoration: none;  
+}
+
+.sidenav li a:hover,
+.sidenav li a:active,
+.sidenav li a:focus,
+.sidenav li.open a:hover,
+.sidenav li.open a:active,
+.sidenav li.open a:focus{
+    color: #fff;
+    text-decoration: none;
+    background-color: transparent;
+}

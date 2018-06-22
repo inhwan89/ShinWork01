@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper 
+	PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+	"http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace = "accommodation">
+
+<insert id = "insertM" parameterType = "accommodation.AccommodationVo">
+		insert into accommodation(serial, aname, mdate, worker, freeparking, freemeal, pool, nosmoking, freewifi, fitness, hit, content, address1, address2, address3, privacy, parkingspace, part, phone, email)
+		values(seq_accommodation.nextval, #{aname}, sysdate, #{worker}, #{freeparking}, #{freemeal}, #{pool}, #{nosmoking}, #{freewifi}, #{fitness}, 0, #{content}, #{address1}, #{address2}, #{address3}, #{privacy}, #{parkingspace}, #{part}, #{phone}, #{email})
+</insert>
+
+
+<insert id = "insertP" parameterType = "accommodation.AccommodationVo">
+		insert all
+		
+		into accommodation_att(serial, pserial, rserial, attfile, oriattfile)
+		values(getSerialAC, seq_accommodation.currval, #{rserial}, #{map_key}, #{map_value})
+	
+		select * from dual
+</insert>
+
+<insert id = "insertR" parameterType = "accommodation.RoomVo">
+		insert into room(serial, pserial, room, room_num, checkin, checkout, checkins, checkouts, weekdays, weekdayss, weekends, weekendss, rcontent, r_tv, r_wifi, r_pc, r_bath, r_breakfast)
+		values(seq_room.nextval, seq_accommodation.currval, #{room}, #{room_num}, #{checkin}, #{checkout}, #{checkins}, #{checkouts}, #{weekdays}, #{weekdayss}, #{weekends}, #{weekendss}, #{rcontent}, #{r_tv}, #{r_wifi} ,#{r_pc} ,#{r_bath}, #{r_breakfast})
+</insert>
+
+<update id = "updateHit" parameterType="int">
+		update accommodation set hit = nvl(hit, 0) + 1 where serial = ${_parameter}
+</update>
+
+<select id = 'select' parameterType="accommodation.AccommodationVo" resultType="accommodation.AccommodationVo"> 
+select b.* from (select rownum cnt, z.* from 
+(select a.serial serial, attfile attfileshow, aname, address1, address2, part, hit 
+from accommodation a join accommodation_att aa 
+on a.serial = aa.pserial where aa.oriattfile = 'attfile0' and 
+address1 like '%${address1}%' and address2 like '%${address2}%' and aname like '%${findStr}%' and part=#{part})z )b 
+where b.cnt between '1' and '3'
+</select>
+
+<select id = 'selectOne' parameterType="int" resultType="accommodation.AccommodationVo"> 
+	select phone, email, aname, mdate, worker, freemeal, parkingspace, freeparking, pool, nosmoking, freewifi, fitness, address1, address2, address3, privacy, content, a.serial serial, attfile attfileshow, hit from accommodation a join accommodation_att aa on a.serial = aa.pserial where a.serial = ${_parameter} and aa.oriattfile = 'attfile0'
+</select>
+
+<select id = 'review' parameterType="int" resultType="String"> 
+	select ROUND(avg(avg),2) avg from accommodation a join review r on a.aname = r.store where a.serial = ${_parameter}
+</select>
+
+
+<select id = 'roomList' parameterType="int" resultType="accommodation.RoomVo"> 
+	select * from room where pserial = ${_parameter} order by serial
+</select>
+
+<select id = 'picList' parameterType="int" resultType="accommodation.RoomAttVo"> 
+	select * from accommodation_att aa join room r on aa.pserial = r.pserial where aa.pserial = #{_parameter}
+</select>
+
+
+<!-- modify info of accommodations -->
+<delete id = "deleteR" parameterType = "accommodation.AccommodationVo">	
+		delete room where pserial = #{serial}
+</delete>
+<update id = "modify" parameterType = "accommodation.AccommodationVo">
+		update accommodation set aname =  #{aname}, freeparking =  #{freeparking}, 
+		freemeal = #{freemeal}, pool= #{pool}, nosmoking = #{nosmoking}, 
+		freewifi = #{freewifi}, fitness = #{fitness}, content = #{content}, 
+		address1 = #{address1}, address2 = #{address2}, address3 = #{address3}, privacy = #{privacy}, 
+		parkingspace = #{parkingspace}, part = #{part} where serial = ${serial}
+</update>
+<insert id = "modifyR" parameterType = "accommodation.RoomVo">
+		insert into room(serial, pserial, room, room_num, checkin, checkout, checkins, checkouts, weekdays, weekdayss, weekends, weekendss, rcontent, r_tv, r_wifi, r_pc, r_bath, r_breakfast)
+		values(seq_room.nextval, #{pserial}, #{room}, #{room_num}, #{checkin}, #{checkout}, #{checkins}, #{checkouts}, #{weekdays}, #{weekdayss}, #{weekends}, #{weekendss}, #{rcontent}, #{r_tv}, #{r_wifi} , #{r_pc} , #{r_bath}, #{r_breakfast})
+</insert>
+
+<delete id = "deleteP" parameterType="String">	
+		delete accommodation_att where attfile= #{_parameter}
+</delete>
+
+
+<delete id = "deletePG" parameterType="int">	
+		delete accommodation_att where rserial= #{_parameter}
+</delete>
+
+<insert id = "modifyP" parameterType = "accommodation.AccommodationVo">
+		insert into accommodation_att(serial, pserial, rserial, attfile, oriattfile)
+		values(getSerialAC, #{serial}, #{rserial}, #{map_key}, #{map_value})
+</insert>
+
+<select id = "selectP" parameterType = "int" resultType="accommodation.AccommodationVo">
+		select attfile delfile from accommodation_att where rserial = #{_parameter}
+</select>
+
+
+<select id = "selectPToDel" parameterType = "int" resultType="accommodation.AccommodationVo">
+		select attfile delfile from accommodation_att where pserial = #{_parameter}
+</select>
+
+<delete id = "delAllP" parameterType = "int">
+		delete accommodation_att where pserial = #{_parameter}
+</delete>
+
+<delete id = "delAllA" parameterType = "int">
+		delete accommodation where serial = #{_parameter}
+</delete>
+
+<delete id = "delAllR" parameterType = "int">
+		delete room where pserial = #{_parameter}
+</delete>
+
+<select id = 'select_detail' parameterType="accommodation.AccommodationVo" resultType="accommodation.AccommodationVo"> 
+		select b.* from (select rownum cnt, z.* from 
+		(select a.serial serial, attfile attfileshow, aname, address1, address2, part 
+		from accommodation a join accommodation_att aa 
+		on a.serial = aa.pserial where aa.oriattfile = 'attfile0' and part = #{part} and 
+		(address1 like '%${address1}%' and address2 like '%${address2}%' and aname like '%${findStr}%'))z )b 
+		where b.cnt between ${startNo} and ${endNo}
+</select>
+<select id = 'page' parameterType="accommodation.AccommodationVo" resultType="int">
+        select count(*) totSize from accommodation a join accommodation_att aa on a.serial = aa.pserial
+        where aa.oriattfile = 'attfile0' and part = #{part} and (address1 like '%${address1}%' and address2 like '%${address2}%' and aname like '%${findStr}%')
+</select>
+
+<select id="list_restaurant" parameterType="accommodation.AccommodationVo" resultType="restaurant.RestaurantVo">
+	select * from RESTAURANT_PHOTO a join RESTAURANT b on b.serial = a.pserial 
+	where raddress1 like '%${address1}%' and raddress2 like '%${address2}%' and a.tagname='rphoto_main' order by rhit desc
+</select>
+
+</mapper>
